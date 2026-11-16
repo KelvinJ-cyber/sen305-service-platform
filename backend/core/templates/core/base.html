@@ -18,7 +18,30 @@
         </nav>
       </div>
     </header>
-    <main class="container">{% block content %}{% endblock %}</main>
+    <main class="container">
+      {% if messages %}
+    <div class="messages" aria-live="polite">
+        {% for message in messages %}
+            <p class="message {{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<!-- Shared Navigation -->
+<nav class="main-nav">
+    {% if user.is_authenticated %}
+        <a href="{% url 'requests:list' %}">Requests</a>
+        <form method="post" action="{% url 'logout' %}" class="nav-form">
+            {% csrf_token %}
+            <button type="submit">Sign out</button>
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}">Sign in</a>
+    {% endif %}
+</nav>
+    </main>
     <footer class="site-footer">
       <div class="container">VUA-SEN305 practical project</div>
     </footer>

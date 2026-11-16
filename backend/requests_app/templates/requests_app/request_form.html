@@ -1,0 +1,43 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ mode }} service request{% endblock %}
+
+{% block content %}
+<p class="back-link"><a href="{% url 'requests:list' %}">&larr; All requests</a></p>
+
+<header class="page-heading">
+    <p class="eyebrow">Service desk</p>
+    <h1>{{ mode }} service request</h1>
+    <p>Provide the details below so the request can be routed to the right team.</p>
+</header>
+
+<form method="post" class="request-form request-card">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error summary-error" role="alert">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    {% for field in form %}
+        <p class="form-field{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <div class="form-error" role="alert">{{ field.errors }}</div>
+            {% endif %}
+        </p>
+    {% endfor %}
+
+    <div class="form-actions">
+        <button class="button" type="submit">{{ mode }} request</button>
+        <a class="button button-ghost" href="{% if item %}{% url 'requests:detail' item.id %}{% else %}{% url 'requests:list' %}{% endif %}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

@@ -26,6 +26,10 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = []
 
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "requests:list"
+LOGOUT_REDIRECT_URL = "core:home"
+
 
 # Application definition
 
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'requests_app.apps.RequestsAppConfig',
 ]
 
 MIDDLEWARE = [
