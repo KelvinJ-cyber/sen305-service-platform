@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils import timezone
 
 # Register your models here.
 
@@ -20,6 +21,38 @@ class CommentInline(admin.TabularInline):
     fields = ("author", "body", "is_internal", "created_at")
     readonly_fields = ("created_at",)
 
+class OverdueFilter(admin.SimpleListFilter):
+    title = "overdue status"
+    parameter_name = "overdue"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Overdue"),
+            ("no", "Not overdue"),
+        )
+
+    def queryset(self, request, queryset):
+        now = timezone.now()
+
+        active_statuses = [
+            "open",
+            "assigned",
+            "in_progress",
+        ]
+
+        if self.value() == "yes":
+            return queryset.filter(
+                due_at__lt=now,
+                status__in=active_statuses,
+            )
+
+        if self.value() == "no":
+            return queryset.exclude(
+                due_at__lt=now,
+                status__in=active_statuses,
+            )
+
+        return queryset
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
@@ -29,16 +62,19 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         "requester",
         "priority",
         "status",
+        "due_at",
+        "resolution_summary",
         "created_at",
     )
 
-    list_filter = ("status", "priority", "category")
+    list_filter = ("status", "priority", "category", OverdueFilter)
 
     search_fields = (
         "title",
         "description",
         "location",
         "requester__username",
+        "resolution_summary",
     )
 
     readonly_fields = ("id", "created_at", "updated_at")
@@ -83,3 +119,4 @@ class CommentAdmin(admin.ModelAdmin):
         "service_request__title",
         "author__username",
     )
+

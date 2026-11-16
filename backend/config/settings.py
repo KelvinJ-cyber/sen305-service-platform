@@ -26,6 +26,10 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = []
 
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "requests:list"
+LOGOUT_REDIRECT_URL = "core:home"
+
 
 # Application definition
 

@@ -1,0 +1,82 @@
+{% extends "core/base.html" %}
+
+{% block title %}Service requests{% endblock %}
+
+{% block content %}
+<header class="page-heading request-list-heading">
+    <div>
+        <p class="eyebrow">Service desk</p>
+        <h1>Service requests</h1>
+        <p>Track, review, and manage requests submitted to your team.</p>
+    </div>
+    <a class="button" href="{% url 'requests:create' %}">+ New request</a>
+</header>
+
+<form method="get" class="filters">
+    <label for="request-search">Search requests
+        <input id="request-search" name="q" value="{{ query }}" placeholder="Search by title or description">
+    </label>
+    <label for="request-status">Status
+        <select id="request-status" name="status">
+            <option value="">All</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <button class="button button-secondary" type="submit">Apply filters</button>
+</form>
+
+<section class="request-card">
+    <div class="section-header">
+        <div>
+            <h2>All requests</h2>
+            <p>{{ page_obj.paginator.count }} request{{ page_obj.paginator.count|pluralize }}</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Request</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td>
+                            <a class="request-title" href="{% url 'requests:detail' item.id %}">{{ item.title }}</a>
+                            <small>{{ item.location }}</small>
+                        </td>
+                        <td>{{ item.category }}</td>
+                        <td><span class="priority priority-{{ item.priority }}">{{ item.get_priority_display }}</span></td>
+                        <td><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></td>
+                        <td>{{ item.comment_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="empty-state" colspan="5">
+                            <strong>No matching requests</strong>
+                            <span>Try changing your filters or create a new request.</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<nav class="request-pagination" aria-label="Request pages">
+    {% if page_obj.has_previous %}
+        <a class="pagination-link" href="?q={{ query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.previous_page_number }}">&larr; Previous</a>
+    {% endif %}
+    <span>Page <strong>{{ page_obj.number }}</strong> of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="pagination-link" href="?q={{ query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.next_page_number }}">Next &rarr;</a>
+    {% endif %}
+</nav>
+{% endblock %}

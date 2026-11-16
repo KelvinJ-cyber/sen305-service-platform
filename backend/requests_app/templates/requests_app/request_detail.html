@@ -1,0 +1,68 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block content %}
+<p class="back-link"><a href="{% url 'requests:list' %}">&larr; All requests</a></p>
+
+<header class="detail-heading">
+    <div>
+        <p class="eyebrow">Request details</p>
+        <h1>{{ item.title }}</h1>
+        <p class="muted">Submitted by {{ item.requester.username }}</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'requests:update' item.id %}">Edit request</a>
+</header>
+
+<div class="detail-layout">
+    <main>
+        <section class="request-card detail-section">
+            <h2>Description</h2>
+            <p class="description">{{ item.description|linebreaksbr }}</p>
+        </section>
+
+        <section class="request-card detail-section">
+            <div class="section-header">
+                <div>
+                    <h2>Comments</h2>
+                    <p>Updates and discussion about this request.</p>
+                </div>
+            </div>
+            <div class="comments">
+                {% for comment in comments %}
+                    <article class="comment">
+                        <div class="comment-header">
+                            <strong>{{ comment.author.username }}</strong>
+                            <time>{{ comment.created_at|date:"d M Y H:i" }}</time>
+                        </div>
+                        <p>{{ comment.body|linebreaksbr }}</p>
+                    </article>
+                {% empty %}
+                    <p class="empty-copy">No comments yet. Start the conversation below.</p>
+                {% endfor %}
+            </div>
+            <form method="post" action="{% url 'requests:comment-add' item.id %}" class="comment-form">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button class="button" type="submit">Add comment</button>
+            </form>
+        </section>
+    </main>
+
+    <aside class="request-card request-sidebar">
+        <h2>Request overview</h2>
+        <dl class="request-meta">
+            <dt>Status</dt>
+            <dd><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></dd>
+            <dt>Priority</dt>
+            <dd><span class="priority priority-{{ item.priority }}">{{ item.get_priority_display }}</span></dd>
+            <dt>Category</dt>
+            <dd>{{ item.category }}</dd>
+            <dt>Location</dt>
+            <dd>{{ item.location }}</dd>
+            <dt>Created</dt>
+            <dd>{{ item.created_at|date:"d M Y" }}</dd>
+        </dl>
+    </aside>
+</div>
+{% endblock %}

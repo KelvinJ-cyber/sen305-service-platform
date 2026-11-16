@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.core.exceptions import ValidationError
 # Create your models here.
 
 
@@ -70,7 +71,8 @@ class ServiceRequest(models.Model):
     resolved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    due_at = models.DateTimeField(null=True, blank=True)
+    resolution_summary = models.TextField(blank=True)
     class Meta:
         ordering = ("-created_at",)
 
@@ -83,6 +85,11 @@ class ServiceRequest(models.Model):
                 fields=("priority", "created_at"),
                 name="req_priority_date_idx"
             ),
+            models.Index(
+                fields=("status", "due_at"),
+                name="req_status_due_idx",
+            ),	
+
         ]
 
         constraints = [
@@ -94,6 +101,27 @@ class ServiceRequest(models.Model):
                 name="request_priority_between_1_and_5",
             ),
         ]
+    def clean(self):
+        super().clean()
+
+        if self.status in [
+            self.Status.RESOLVED,
+            self.Status.CLOSED,
+        ]:
+            errors = {}
+
+            if not self.resolved_at:
+                errors["resolved_at"] = (
+                    "Resolved or closed requests require a resolution date."
+                )
+
+            if not self.resolution_summary or not self.resolution_summary.strip():
+                errors["resolution_summary"] = (
+                    "Resolved or closed requests require a resolution summary."
+                )
+
+            if errors:
+                raise ValidationError(errors)
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
